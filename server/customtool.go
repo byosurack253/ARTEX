@@ -185,9 +185,16 @@ const settingPythonInterp = "python_interpreter"
 
 // detectPython finds a python interpreter absolute path (python3 preferred).
 func detectPython() string {
+	pathEnv := os.Getenv("PATH")
 	for _, c := range []string{"python3", "python"} {
-		if p, err := exec.LookPath(c); err == nil {
-			return p
+		for _, dir := range strings.Split(pathEnv, ":") {
+			if dir == "" {
+				continue
+			}
+			p := dir + "/" + c
+			if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
+				return p
+			}
 		}
 	}
 	return ""
